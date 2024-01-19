@@ -1,7 +1,6 @@
 """
-6.1010 Spring '23 Lab 12: LISP Interpreter Part 2
+6.1010 Spring '23 Lab 11: LISP Interpreter Part 1
 """
-
 #!/usr/bin/env python3
 import os
 import lab
@@ -152,7 +151,6 @@ def do_continued_evaluations(n):
         compare_outputs(result, expected, msg+m)
 
 
-
 def do_raw_continued_evaluations(n):
     """
     Test that the results from running continued evaluations in the same
@@ -248,235 +246,169 @@ def _test_file_msg(fname, n):
     return msg
 
 
+## TESTS FOR TOKENIZATION AND PARSING
 
-def test_oldbehaviors():
+
+
+def test_tokenize():
     run_test_number(0, lab.tokenize)
+
+
+def test_tokenize_lines():
     run_test_number(31, lab.tokenize)
+
+
+def test_tokenize_comments():
     run_test_number(32, lab.tokenize)
+
+
+def test_parse():
     run_test_number(1, lab.parse)
+
+
+def test_parse_valid():
     run_test_number(33, lab.parse)
+
+
+def test_parse_invalid():
     run_test_number(2, lab.parse)
+
+
+def test_tokenize_and_parse():
     run_test_number(3, lambda i: lab.parse(lab.tokenize(i)), "parse(tokenize(line))")
+
+
+## TESTS FOR CALCULATOR
+
+
+def test_calc():
     run_test_number(4, lab.evaluate)
+
+
+def test_mult_div():
     run_test_number(5, lab.evaluate)
+
+
+def test_calc_pair():
     run_test_number(34, lab.evaluate)
+    
+
+def test_calc_nested():
     run_test_number(35, lab.evaluate)
+
+
+## TESTS FOR VARIABLE ASSIGNMENT AND LOOKUP
+
+def test_result_and_frame():
+    # is result_and_frame defined and work for a simple input
+    output = lab.result_and_frame(5)
+    try:
+        assert len(output) == 2, f"Expected len 2 but got {output=}"
+    except:
+        assert False, f"Expected len 2 but got {output=}"
+    assert output[0] == 5, f"Expected first part of output evaluated expression but got {output=}"
+    assert output[1] is not None and output[0]!=output[1], f"Expected second part of output to be a frame but got {output=}"
+
+
+def test_simple_assignment_1():
     do_continued_evaluations(6)
+
+
+def test_simple_assignment_2():
     do_continued_evaluations(7)
+
+
+def test_bad_lookups():
     do_continued_evaluations(8)
+
+
+def test_rename_builtin():
     do_continued_evaluations(9)
+
+
+## TESTS FOR FUNCTION DEFINITION/APPLICATIONi
+
+
+def test_simple_function():
     do_continued_evaluations(10)
+
+
+def test_inline_lambda():
     do_continued_evaluations(11)
+
+
+def test_closures():
     do_continued_evaluations(12)
+
+
+## INTEGRATION TESTS
+
+
+def test_short_definition():
     do_raw_continued_evaluations(13)
+
+
+def test_dependent_definition():
     do_raw_continued_evaluations(14)
+
+
+def test_scoping_1():
     do_raw_continued_evaluations(15)
+
+
+def test_scoping_2():
     do_raw_continued_evaluations(16)
+
+
+def test_scoping_3():
     do_raw_continued_evaluations(17)
+
+
+def test_scoping_4():
     do_raw_continued_evaluations(18)
+
+
+def test_scoping_5():
     do_raw_continued_evaluations(19)
+
+
+def test_calling_errors():
     do_raw_continued_evaluations(20)
+
+
+def test_functionception():
     do_raw_continued_evaluations(21)
+
+
+def test_alias():
     do_raw_continued_evaluations(22)
+
+
+def test_big_scoping_1():
     do_raw_continued_evaluations(23)
+
+
+def test_big_scoping_2():
     do_raw_continued_evaluations(24)
+
+
+def test_big_scoping_3():
     do_raw_continued_evaluations(25)
+
+
+def test_big_scoping_4():
     do_raw_continued_evaluations(26)
+
+
+## ADDITIONAL TESTS FOR COMMON ERRORS
+
+
+def test_more_syntax():
     do_raw_continued_evaluations(27)
+
+
+def test_nested_defines():
     do_raw_continued_evaluations(28)
-
-# BOOLEANS AND CONDITIONALS
-
-
-def test_conditionals():
-    do_raw_continued_evaluations(87)
-
-
-def test_comparisons():
-    do_raw_continued_evaluations(67)
-
-
-# BOOLEAN COMBINATORS
-
-
-def test_func():
-    do_raw_continued_evaluations(88)
-
-
-def test_and():
-    do_raw_continued_evaluations(89)
-
-
-def test_or():
-    do_raw_continued_evaluations(90)
-
-
-def test_not():
-    do_raw_continued_evaluations(91)
-
-
-def test_shortcircuit_1():
-    do_raw_continued_evaluations(92)
-
-
-def test_shortcircuit_2():
-    do_raw_continued_evaluations(36)
-
-
-def test_shortcircuit_3():
-    do_raw_continued_evaluations(37)
-
-
-def test_shortcircuit_4():
-    do_raw_continued_evaluations(38)
-
-
-def test_conditional_scoping():
-    do_raw_continued_evaluations(39)
-
-
-def test_conditional_scoping_2():
-    do_raw_continued_evaluations(40)
-
-
-# TESTS FOR LIST BASICS
-
-
-def test_cons_lists():
-    do_raw_continued_evaluations(41)
-
-
-def test_car_cdr():
-    do_raw_continued_evaluations(42)
-
-
-def test_car_cdr_2():
-    do_raw_continued_evaluations(43)
-
-
-def test_islist():
-    do_raw_continued_evaluations(68)
-
-
-def test_length():
-    do_raw_continued_evaluations(44)
-
-
-def test_indexing():
-    do_raw_continued_evaluations(45)
-
-
-def test_append():
-    do_raw_continued_evaluations(46)
-
-
-def test_list_ops():
-    do_raw_continued_evaluations(47)
-
-# TESTS FOR MAP FILTER REDUCE
-
-def test_map_builtin():
-    do_raw_continued_evaluations(78)
-
-def test_map_carlaefunc():
-    do_raw_continued_evaluations(79)
-
-def test_filter_builtin():
-    do_raw_continued_evaluations(80)
-
-def test_filter_carlaefunc():
-    do_raw_continued_evaluations(81)
-
-def test_reduce_builtin():
-    do_raw_continued_evaluations(82)
-
-def test_reduce_carlaefunc():
-    do_raw_continued_evaluations(83)
-
-def test_map_filter_reduce():
-    do_raw_continued_evaluations(84)
-
-# TESTS FOR READING CODE FROM FILES
-
-def test_begin():
-    do_raw_continued_evaluations(48)
-
-
-def test_file():
-    compare_outputs(*_test_file("small_test1.scm", 49))
-
-
-def test_file_2():
-    compare_outputs(*_test_file("small_test2.scm", 50))
-
-
-def test_file_3():
-    compare_outputs(*_test_file("small_test3.scm", 51))
-
-def test_file_4():
-    compare_outputs(*_test_file("small_test4.scm", 85))
-
-def test_file_5():
-    compare_outputs(*_test_file("small_test5.scm", 86))
-
-def test_del():
-    do_raw_continued_evaluations(52)
-
-
-def test_let():
-    do_raw_continued_evaluations(53)
-
-
-def test_let_2():
-    do_raw_continued_evaluations(54)
-
-
-def test_let_3():
-    do_raw_continued_evaluations(55)
-
-
-def test_setbang():
-    do_raw_continued_evaluations(56)
-
-
-def test_begin2():
-    do_raw_continued_evaluations(57)
-
-
-def test_deep_nesting_1():
-    do_raw_continued_evaluations(58)
-
-
-def test_deep_nesting_2():
-    do_raw_continued_evaluations(59)
-
-
-def test_deep_nesting_3():
-    do_raw_continued_evaluations(60)
-
-
-def test_counters_oop():
-    do_raw_continued_evaluations(61)
-
-
-def test_fizzbuzz():
-    do_raw_continued_evaluations(62)
-
-
-def test_primes():
-    do_raw_continued_evaluations(63)
-
-
-def test_averages_oop():
-    do_raw_continued_evaluations(64)
-
-
-def test_nd_mines():
-    do_raw_continued_evaluations(65)
-
-
-def test_sudoku_solver():
-    do_raw_continued_evaluations(66)
 
 
 if __name__ == "__main__":

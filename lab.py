@@ -1,8 +1,10 @@
 """
-6.1010 Spring '23 Lab 12: LISP Interpreter Part 2
+6.1010 Spring '23 Lab 11: LISP Interpreter Part 1
 """
 #!/usr/bin/env python3
+
 import sys
+import doctest
 
 sys.setrecursionlimit(20_000)
 
@@ -190,53 +192,6 @@ def parse(tokens):
 ######################
 # Built-in Functions #
 ######################
-
-
-class Nil:
-    def __init__(self):
-        pass
-
-    def __eq__(self, other):
-        if isinstance(other, Nil):
-            return True
-
-        return False
-
-
-class Frame:
-    """
-    A class that contains a dictionary with keys as variables and values as numbers
-    Also contains a parent frame that acts as the root in the tree
-    """
-
-    def __init__(self, parent=None):
-        self.frame_dict = {}
-        self.parent = parent
-
-        # need to initalize dictionary
-
-    def dictionary_setup(self, var, val):
-        self.frame_dict[var] = val
-
-    def getter(self, var):
-        if var not in self.frame_dict:
-            if self.parent is None:
-                raise SchemeNameError  # if it's not in parent at all (checked all the way up)
-            return self.parent.getter(var)  # if not check the parent
-        return self.frame_dict[var]  # if it is in current
-
-    def lookup(self, var, val):
-        if var in self.frame_dict:  # base case
-            self.dictionary_setup(var, val)
-            return val
-        else:
-            if self.parent is None:  # recursive case
-                raise SchemeNameError  # raise if there's no parent
-            return self.parent.lookup(var, val)  # keep looking inside
-
-    # do I need to write an additional thing to check if variable is sequence of characters?
-
-
 def mul(args):
     """
     Multiplies two numbers. If none, return 0
@@ -264,295 +219,32 @@ def div(args):
             results /= item
         return results
 
-
-def equal(args):
-    if args is None:
-        raise SchemeEvaluationError  # not sure if this is the correct way
-    elif len(args) == 1:
-        return True  # I don't know if the above base cases are necessary?
-    else:
-        result = args[0]
-        if all(item == result for item in args):
-            return True
-        return False
+    # recursive helpers separate the two cases
 
 
-def decrease(args):
-    if args is None:
-        raise SchemeEvaluationError  # not sure if this is the correct way
-    elif len(args) == 1:
-        return True  # I don't know if the above base cases are necessary?
-    else:
-        if all(args[i + 1] < args[i] for i in range(len(args) - 1)):
-            return True
-        return False
-
-
-def increase(args):
-    if args is None:
-        raise SchemeEvaluationError  # not sure if this is the correct way
-    elif len(args) == 1:
-        return True  # I don't know if the above base cases are necessary?
-    else:
-        if all(args[i + 1] > args[i] for i in range(len(args) - 1)):
-            return True
-        return False
-
-
-def nonincreasing(args):
-    if args is None:
-        raise SchemeEvaluationError  # not sure if this is the correct way
-    elif len(args) == 1:
-        return True  # I don't know if the above base cases are necessary?
-    else:
-        if all(args[i] >= args[i + 1] for i in range(len(args) - 1)):
-            return True
-        return False
-
-
-def nondecreasing(args):
-    if args is None:
-        raise SchemeEvaluationError  # not sure if this is the correct way
-    elif len(args) == 1:
-        return True  # I don't know if the above base cases are necessary?
-    else:
-        if all(args[i] <= args[i + 1] for i in range(len(args) - 1)):
-            return True
-        return False
-
-
-def not_method(args):
-    if len(args) == 1:
-        return not args[0]
-    else:
-        raise SchemeEvaluationError
-
-
-def car(args):
-    if len(args) != 1:
-        raise SchemeEvaluationError
-    obj = args[0]
-    if not isinstance(obj, Pair):
-        raise SchemeEvaluationError
-    return obj.car
-
-
-def cdr(args):
-    if len(args) != 1:
-        raise SchemeEvaluationError
-    obj = args[0]
-    if not isinstance(obj, Pair):
-        raise SchemeEvaluationError
-    return obj.cdr
-
-
-def list_boolean(args):
-    """ 
-    Takes in an arbitrary object and checks if it is a type scheme list 
+class Frame:
     """
-    # check args length
-    # then retrieve parameters from args
-    # never use args again and use object
-    if len(args) != 1:
-        raise SchemeEvaluationError
-    obj = args[0]
-    if isinstance(obj, Nil) or obj == []:
-        return True  # this case is not passing
-    elif isinstance(obj, Pair) and list_boolean([obj.cdr]):
-        return True
-    else:
-        return False
-
-
-def length(args):  # args takes in a list though not an object ...?
+    A class that contains a dictionary with keys as variables and values as numbers
+    Also contains a parent frame that acts as the root in the tree
     """
-    Takes in a list and finds the length of the linked list 
-    """
-    counter = 0
-    if len(args) != 1:
-        raise SchemeEvaluationError
-    obj = args[0]
-    boolean_value = list_boolean(args)
-    if not boolean_value:
-        raise SchemeEvaluationError  # if object is not a linked list
-    while not isinstance(obj, Nil):
-        counter += 1
-        obj = obj.cdr
-    return counter
 
+    def __init__(self, parent=None):
+        self.frame_dict = {}
+        self.parent = parent
 
-def list_ref(args):
-    """
-    Returns the value based on the provided index for the scheme list 
-    """
-    if len(args) != 2:
-        raise SchemeEvaluationError  # I am not sure if this is correct
-    obj = args[0]
-    index = args[1]
-    boolean_value = list_boolean([args[0]])
-    if isinstance(obj, Pair) and not boolean_value:
-        if index == 0:
-            return obj.car
-        raise SchemeEvaluationError
-    elif isinstance(obj, Pair) and boolean_value:
-        if index == 0:
-            return obj.car
-        else:
-            return list_ref((obj.cdr, index - 1))
-    else:
-        raise SchemeEvaluationError
+        # need to initalize dictionary
 
+    def dictionary_setup(self, var, val):
+        self.frame_dict[var] = val
 
-def append(args):  # [ scheme lists ]
-    """
-    Appends values to a scheme list 
-    """
-    args = [arg for arg in args if not isinstance(arg, Nil)]  # don't want Nil
-    for i in range(len(args)):
-        if list_boolean([args[i]]) is False:
-            raise SchemeEvaluationError
-    if len(args) == 0:
-        return Nil()
-    elif len(args) == 1:  # you need to use the helper function length
-        return copy(
-            args[0]
-        )  # do I need to call helper functions like cons and list_func?
-        # it returns the pair object, not sure if correct
-    else:
-        first_list = copy(args[0])
-        other_list = append(args[1:])
-        ptr = first_list  # need a pointer variable
-        while not isinstance(ptr.cdr, Nil):  # keep doing until the cdr is Nil
-            # if isinstance(ptr, Nil):
-            ptr = ptr.cdr  # reassign the pointer
-        ptr.cdr = other_list  # once we break we reassign the Nil cdr to the other_list
-        return first_list
-    # you can't be doing recursion if you aren't doing base case and a recursive case
+    def getter(self, var):
+        if var not in self.frame_dict:
+            if self.parent is None:
+                raise SchemeNameError  # if it's not in parent at all (checked all the way up)
+            return self.parent.getter(var)  # if not check the parent
+        return self.frame_dict[var]  # if it is in current
 
-
-def copy(lst):
-    """
-    Makes a copy of the scheme list using the car cdr format 
-    """
-    if isinstance(lst, Nil):
-        return Nil()
-    elif isinstance(lst.cdr, Nil):
-        return Pair(lst.car, Nil())
-    else:
-        return Pair(lst.car, copy(lst.cdr))
-    # use while loop for accessing nil
-
-
-def cons(args):
-    """
-    Constructs a pair object with car and cdr 
-    """
-    if len(args) != 2:
-        raise SchemeEvaluationError
-    new_pair = Pair(args[0], args[1])
-    # I think the error is coming from nil being string, can't be concatenated
-    # should I therefore take care of that in the class methods?
-    return new_pair
-
-
-def list_func(args):
-    """
-    Makes a list function using Pair ojbect 
-    """
-    if len(args) == 0:
-        return Nil()
-    elif len(args) == 1:
-        return Pair(args[0], Nil())
-    else:
-        return Pair(args[0], list_func(args[1:]))
-
-
-def map_func(args):
-    """
-    Performs functions on each value in the scheme list 
-    """
-    func = args[0]
-    lst = args[1]
-    new_list = []
-    ptr = lst
-
-    if not list_boolean([lst]):
-        raise SchemeEvaluationError
-
-    if isinstance(ptr, Nil):
-        return Nil()
-    while not isinstance(ptr, Nil):
-        value = func([ptr.car])  # wouldn't I have to call evaluate or something then?
-        new_list.append(value)
-        ptr = ptr.cdr
-    scheme_list = list_func(
-        new_list
-    )  # maybe it can't take in these parameters correctly
-    return scheme_list
-    # could I use a for loop instead of doing recursion?
-
-
-def filter_func(args):
-    """
-    Returns a list of values that satisfy the boolean statement 
-    """
-    func = args[0]
-    lst = args[1]
-    new_list = []
-    ptr = lst
-    if not list_boolean([lst]):
-        raise SchemeEvaluationError
-
-    if isinstance(ptr, Nil):
-        return Nil()
-    while not isinstance(ptr, Nil):
-        value = func([ptr.car])
-        if value is True:  # wouldn't I have to call evaluate or something then?
-            new_list.append(ptr.car)
-        ptr = ptr.cdr
-    scheme_list = list_func(
-        new_list
-    )  # maybe it can't take in these parameters correctly
-    return scheme_list
-
-
-def reduce_func(args):
-    """
-    Returns the final value after calling the function on the list 
-    """
-    func = args[0]
-    lst = args[1]
-    initial = args[2]
-    ptr = lst
-    if not list_boolean([lst]):
-        raise SchemeEvaluationError
-
-    if isinstance(lst, Nil):
-        return initial  # smallest input possible
-
-    else:
-        first_arg = lst.car
-        other_arg = lst.cdr
-        evaluate_first = func([initial, first_arg])  # at least one element is recursive
-        evaluate_second = reduce_func(
-            [func, other_arg, evaluate_first]
-        )  # handle rest of list using recursion
-        return evaluate_second
-        # if I put it here wouldn't it reset all the time?
-
-
-def begin(args):
-    # every args gets evaluated
-    # built in vs special form (special form cannot evaluate x)
-    return args[-1]
-
-
-def evaluate_file(file_name, frame=None):
-    file = open(file_name, mode="r")
-    read_content = file.read()  # read processes it and converts it to a string
-    tokenized = tokenize(read_content)
-    parsed = parse(tokenized)
-    return evaluate(parsed, frame)
+    # do I need to write an additional thing to check if variable is sequence of characters?
 
 
 scheme_builtins = {
@@ -560,38 +252,7 @@ scheme_builtins = {
     "-": lambda args: -args[0] if len(args) == 1 else (args[0] - sum(args[1:])),
     "*": mul,
     "/": div,
-    "<": increase,
-    ">": decrease,
-    "<=": nondecreasing,
-    ">=": nonincreasing,
-    "equal?": equal,
-    "not": not_method,  # how can I just do a lambda function without getting the error?
-    "#t": True,
-    "#f": False,
-    "car": car,
-    "cdr": cdr,
-    "nil": Nil(),  # is this the right way to do the empty list for nil?
-    "list?": list_boolean,
-    "length": length,
-    "list-ref": list_ref,
-    "append": append,
-    "cons": cons,
-    "list": list_func,
-    "map": map_func,
-    "filter": filter_func,
-    "reduce": reduce_func,
-    "begin": begin,
 }
-
-
-class Pair:
-    def __init__(self, car, cdr):
-        self.car = car
-        self.cdr = cdr
-        # may not need that variable
-
-    def __str__(self):
-        return "(" + " " + str(self.car) + " " + str(self.cdr) + " " + ")"
 
 
 class Functions:
@@ -641,7 +302,6 @@ def evaluate(tree, frame=None):
                             parse function
     """
     # print(tree)
-
     if frame is None:
         frame = Frame(parent_frame)
         # initializing a new built in each time you call evaluate
@@ -652,8 +312,6 @@ def evaluate(tree, frame=None):
     elif isinstance(tree, str):
         return frame.getter(tree)  # variable case
     elif isinstance(tree, list):
-        if len(tree) == 0:
-            raise SchemeEvaluationError
         if tree[0] == "define":
             variable = tree[1]
             if isinstance(variable, list):
@@ -676,59 +334,11 @@ def evaluate(tree, frame=None):
         elif tree[0] == "lambda":
             function = Functions(tree[1], tree[2], frame)
             return function
-        elif tree[0] == "cons":
-            if len(tree[1:]) != 2:
-                raise SchemeEvaluationError
-            new_list = Pair(evaluate(tree[1], frame), evaluate(tree[2], frame))
-            return new_list
-        elif tree[0] == "if":
-            pred = evaluate(tree[1], frame)
-            if pred is True:
-                return evaluate(tree[2], frame)
-            else:
-                return evaluate(tree[3], frame)
-        elif tree[0] == "and":
-            for val in tree[1:]:
-                if evaluate(val, frame) is False:
-                    return False
-            return True
-        elif tree[0] == "or":
-            for val in tree[1:]:
-                if evaluate(val, frame) is True:
-                    return True
-            return False
-        elif tree[0] == "del":
-            variable = tree[1]
-            if (
-                variable not in frame.frame_dict
-            ):  # don't think this is the correct way to do it
-                raise SchemeNameError
-            value = frame.getter(variable)
-            del frame.frame_dict[variable]
-            return value
-        elif tree[0] == "let":
-            variable_list = tree[1]
-            function = tree[2]
-            new_frame = Frame(
-                frame
-            )  # would I have to keep changing this under the for loop or just put it here?
-            for var, val in variable_list:
-                new_val = evaluate(val, frame)
-                new_frame.dictionary_setup(var, new_val)
-            return evaluate(function, new_frame)
-        elif tree[0] == "set!":
-            variable = tree[1]
-            expression = tree[2]
-            value = evaluate(expression, frame)
-            # would I do some for loop or while loop?
-            frame.lookup(variable, value)
-            return value
-
         else:
             func = evaluate(
                 tree[0], frame
             )  # should I also do other if statements for evaluate tree[0] frame???
-            if isinstance(func, (int, float, Nil)):
+            if isinstance(func, (int, float)):
                 raise SchemeEvaluationError
             arguments = []
             for item in tree[1:]:
@@ -766,9 +376,6 @@ def repl(verbose=False):
             expression in addition to more detailed error output.
     """
     import traceback
-
-    for i in range(1, len(sys.argv)):
-        evaluate_file(i)
 
     _, frame = result_and_frame(["+"])  # make a global frame
     while True:
